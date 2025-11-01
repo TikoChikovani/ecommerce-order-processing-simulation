@@ -1,4 +1,7 @@
-package com.example;
+package com.example.core;
+
+import com.example.model.Warehouse;
+import com.example.model.Order;
 
 import java.util.List;
 import java.util.concurrent.BlockingQueue;

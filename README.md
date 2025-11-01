@@ -80,7 +80,7 @@ From the project root directory:
   javac src/com/example/*.java -d out
 
   # Run the main class
-  java -cp out com.example.ProcessingSystem
+  java -cp out com.example.app.ProcessingSystem
 ```
 
 ## Key Concepts Demonstrated

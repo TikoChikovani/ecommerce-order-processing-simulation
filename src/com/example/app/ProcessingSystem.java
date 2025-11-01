@@ -1,5 +1,10 @@
-package com.example;
+package com.example.app;
 
+import com.example.core.Customer;
+import com.example.model.Order;
+import com.example.model.Product;
+import com.example.model.Warehouse;
+import com.example.core.Worker;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,7 +34,7 @@ public class ProcessingSystem {
 
         ExecutorService customerService = Executors.newFixedThreadPool(8);
         for (int i = 0; i < 8; i++) {
-            customerService.submit(new Customer("com.example.Customer" + i, ordersQueue, productList, 10));
+            customerService.submit(new Customer("com.example.core.Customer" + i, ordersQueue, productList, 10));
         }
 
         ExecutorService workerService = Executors.newFixedThreadPool(5);
