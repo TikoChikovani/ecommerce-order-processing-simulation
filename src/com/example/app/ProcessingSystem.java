@@ -1,8 +1,11 @@
 package com.example.app;
 
 import com.example.core.Customer;
+import com.example.core.ReservationManager;
+import com.example.core.ReservationProcessor;
 import com.example.model.Order;
 import com.example.model.Product;
+import com.example.model.Reservation;
 import com.example.model.Warehouse;
 import com.example.core.Worker;
 
@@ -30,7 +33,56 @@ public class ProcessingSystem {
 
         Warehouse warehouse = new Warehouse(productList);
         BlockingQueue<Order> ordersQueue = new LinkedBlockingQueue<>();
+        BlockingQueue<Reservation> reservationsQueue = new LinkedBlockingQueue<>();
         List<Order> processedOrders = Collections.synchronizedList(new ArrayList<>());
+
+        System.out.println("Creating reservations");
+        ExecutorService reservationService = Executors.newFixedThreadPool(5);
+
+        for (int i = 0; i < 5; i++) {
+            reservationService.submit(new ReservationManager(
+                    "ReservationCustomer" + i,
+                    warehouse,
+                    productList,
+                    reservationsQueue,
+                    5
+            ));
+        }
+
+        reservationService.shutdown();
+        reservationService.awaitTermination(10, TimeUnit.SECONDS);
+        System.out.println("Created reservations: " + reservationsQueue.size());
+
+        System.out.println("Processing reservations");
+        ExecutorService processService = Executors.newFixedThreadPool(3);
+        List<ReservationProcessor> processors = new ArrayList<>();
+
+        for (int i = 0; i < 3; i++) {
+            ReservationProcessor processor = new ReservationProcessor(reservationsQueue, warehouse);
+            processors.add(processor);
+            processService.submit(processor);
+        }
+
+        while (!reservationsQueue.isEmpty()) {
+            Thread.sleep(100);
+        }
+
+        processors.forEach(ReservationProcessor::stop);
+        processService.shutdown();
+        processService.awaitTermination(5, TimeUnit.SECONDS);
+
+        int totalProcessed = processors.stream().mapToInt(ReservationProcessor::getProcessed).sum();
+        int totalCancelled = processors.stream().mapToInt(ReservationProcessor::getCancelled).sum();
+
+        System.out.println("\nReservations processed: " + totalProcessed);
+        System.out.println("Reservations cancelled: " + totalCancelled);
+        System.out.println("Active reservations: " + (totalProcessed - totalCancelled));
+
+        System.out.println("Active reservations status");
+        Map<String, Map<Product, Integer>> activeReservations = warehouse.getActiveReservations();
+        System.out.println("Active reservations: " + activeReservations.size());
+
+        System.out.println("Processing regular orders");
 
         ExecutorService customerService = Executors.newFixedThreadPool(8);
         for (int i = 0; i < 8; i++) {
