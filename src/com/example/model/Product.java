@@ -1,5 +1,7 @@
 package com.example.model;
 
+import java.util.Objects;
+
 public class Product {
     private final String name;
     private final double price;
@@ -25,5 +27,30 @@ public class Product {
 
     public synchronized void decreaseQuantity(int quantity) {
         this.quantity -= quantity;
+    }
+
+    public synchronized void increaseQuantity(int quantity) {
+        this.quantity += quantity;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof Product product)) {
+            return false;
+        }
+        return Objects.equals(name, product.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name);
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }
